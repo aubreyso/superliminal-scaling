@@ -5,6 +5,7 @@ using UnityEngine;
 public class PickUp : MonoBehaviour
 {
     // public float pickupRange = 100f; // TODO: play with this, maybe obsolete
+    // test
     public float clampFactor = .01f;
     public float moveForce = 150f;
 
