@@ -8,6 +8,11 @@ public class PickUp : MonoBehaviour
     public float clampFactor = .01f;
     public float moveForce = 150f;
 
+    private float distanceToHeld; // default value
+    private float scaleFactor;   // default value.
+    // private float distanceToHeld = -1; // default value
+    // private float scaleFactor = -1f;   // default value.
+
     public Transform holdParent;
     private GameObject heldObj;
 
@@ -38,13 +43,21 @@ public class PickUp : MonoBehaviour
         if (heldObj != null)
         {
             MoveObject();
+    
+            Debug.Log(distanceToHeld);
+
+            // Move holdParent along vector input
+            if (Input.mouseScrollDelta.y != 0 && distanceToHeld > 2)
+            {
+                MoveHoldParent(Input.mouseScrollDelta.y);
+            }
         }
 
-        // Move holdParent along vector input
-        if (Input.mouseScrollDelta.y != 0)
-        {
-            MoveHoldParent(Input.mouseScrollDelta.y);
-        }
+        // // Move holdParent along vector input
+        // if (Input.mouseScrollDelta.y != 0)
+        // {
+        //     MoveHoldParent(Input.mouseScrollDelta.y);
+        // }
     }
 
     // Moves object to target position until within satisfactory threshold
@@ -58,13 +71,26 @@ public class PickUp : MonoBehaviour
     }
 
     // Moves holdParent along view vector
+    // TODO: ADD FAILSAFE COLLISION STUFF HERE
     void MoveHoldParent(float dir)
     {
         holdParent.transform.position += transform.TransformDirection(Vector3.forward)*dir;
+        distanceToHeld = Vector3.Distance(holdParent.transform.position, transform.position);
+        // Debug.Log("distance: " + distanceToHeld);
+        // Debug.Log("scalefac: " + scaleFactor);
 
-        GameObject transRef = holdParent.transform.GetChild(0).GetChild(0).gameObject;
-        Debug.Log(transRef);
-        transRef.transform.localScale += new Vector3(dir,dir,dir) * 0.2f;
+        // GameObject transRef = holdParent.transform.GetChild(0).GetChild(0).gameObject;
+        GameObject transRef = holdParent.transform.GetChild(0).gameObject;
+
+        float newScale = distanceToHeld * scaleFactor;
+        heldObj.transform.localScale = new Vector3(newScale, newScale, newScale);
+        // Debug.Log(transRef);
+        // transRef.transform.localScale += new Vector3(dir,dir,dir) * 0.2f;
+
+        // test
+        // distanceToHeld = Vector3.Distance(transform.position, heldObj.transform.position)-2.0f;
+        // float newScale = .5f * scaleFactor * distanceToHeld * dir;
+        // transRef.transform.localScale = new Vector3(newScale,newScale,newScale);
     }
 
     // Adjust physics properties, and attach object to holdParent
@@ -79,8 +105,18 @@ public class PickUp : MonoBehaviour
             // objRig.isKinematic = true;
 
             // Move target position (holdParent) to curr. distance along view vector
-            float playerObjectDistance = Vector3.Distance(transform.position, objRig.transform.position)-2.0f;
-            holdParent.transform.position += transform.TransformDirection(Vector3.forward) * playerObjectDistance;
+            float distanceToObj = Vector3.Distance(transform.position, objRig.transform.position)-2.0f;
+            // scaleFactor = objRig.transform.localScale.x / distanceToHeld;
+            // scaleFactor = pickObj.transform.localScale.x / distanceToHeld;
+
+            // Debug.Log("Distance:    " + distanceToHeld);
+            // Debug.Log("Local Scale: " + pickObj.transform.localScale);
+
+            // Debug.Log(scaleFactor);
+            holdParent.transform.position += transform.TransformDirection(Vector3.forward) * distanceToObj;
+
+            distanceToHeld = Vector3.Distance(holdParent.transform.position, transform.position);
+            scaleFactor = pickObj.transform.localScale.x / distanceToHeld;
 
             objRig.transform.parent = holdParent;
             heldObj = pickObj;
