@@ -14,9 +14,10 @@ public class PickUp : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        // Pickup / Drop input
-        if (Input.GetKeyDown(KeyCode.E)) // TODO: replace with mouse input?
+        // "E" input (pick-up / drop)
+        if (Input.GetKeyDown(KeyCode.E))
         {
+            // If nothing held,raycast to search for object
             if (heldObj == null)
             {
                 RaycastHit hit;
@@ -27,28 +28,28 @@ public class PickUp : MonoBehaviour
                     PickupObject(hit.transform.gameObject); // layer masks? maybe rigidbody is enough
                 }
             }
+            // If something held, drop it
             else
             {
                 DropObject();
             }
         }
+        // Move Object to target position (holdParent)
         if (heldObj != null)
         {
             MoveObject();
         }
 
-        // Push along vector input
+        // Move holdParent along vector input
         if (Input.mouseScrollDelta.y != 0)
         {
-            // Debug.Log(Input.mouseScrollDelta.y);
             MoveHoldParent(Input.mouseScrollDelta.y);
         }
-        // Debug.Log(Input.mouseScrollDelta);
     }
 
+    // Moves object to target position until within satisfactory threshold
     void MoveObject()
     {
-        // move object to view
         if (Vector3.Distance(heldObj.transform.position, holdParent.position) > clampFactor)
         {
             Vector3 moveDirection = (holdParent.position - heldObj.transform.position);
@@ -56,10 +57,9 @@ public class PickUp : MonoBehaviour
         }
     }
 
+    // Moves holdParent along view vector
     void MoveHoldParent(float dir)
     {
-        // Debug.Log(holdParent.transform.position.z);
-        // if (holdParent.transform.position.z > .2)
         holdParent.transform.position += transform.TransformDirection(Vector3.forward)*dir;
 
         GameObject transRef = holdParent.transform.GetChild(0).GetChild(0).gameObject;
@@ -67,23 +67,27 @@ public class PickUp : MonoBehaviour
         transRef.transform.localScale += new Vector3(dir,dir,dir) * 0.2f;
     }
 
+    // Adjust physics properties, and attach object to holdParent
     void PickupObject(GameObject pickObj)
     {
         if (pickObj.GetComponent<Rigidbody>())
-        {
-            // holdParent.transform.position = 
+        { 
             Rigidbody objRig = pickObj.GetComponent<Rigidbody>();
             objRig.useGravity = false;
             objRig.drag = 10;   // optional
             objRig.freezeRotation = true;
             // objRig.isKinematic = true;
 
-            holdParent.transform.position = objRig.transform.position;
+            // Move target position (holdParent) to curr. distance along view vector
+            float playerObjectDistance = Vector3.Distance(transform.position, objRig.transform.position)-2.0f;
+            holdParent.transform.position += transform.TransformDirection(Vector3.forward) * playerObjectDistance;
+
             objRig.transform.parent = holdParent;
             heldObj = pickObj;
         }
     }
 
+    // Reset physics properties, and detach object from holdParent
     void DropObject()
     {
         Rigidbody heldRig = heldObj.GetComponent<Rigidbody>();
