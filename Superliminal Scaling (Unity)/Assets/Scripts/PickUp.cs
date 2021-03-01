@@ -44,7 +44,7 @@ public class PickUp : MonoBehaviour
         {
             MoveObject();
     
-            Debug.Log(distanceToHeld);
+            // Debug.Log(distanceToHeld);
 
             // Move holdParent along vector input
             if (Input.mouseScrollDelta.y != 0 && distanceToHeld > 2)
@@ -74,23 +74,17 @@ public class PickUp : MonoBehaviour
     // TODO: ADD FAILSAFE COLLISION STUFF HERE
     void MoveHoldParent(float dir)
     {
+        // move object along view vector
         holdParent.transform.position += transform.TransformDirection(Vector3.forward)*dir;
         distanceToHeld = Vector3.Distance(holdParent.transform.position, transform.position);
         // Debug.Log("distance: " + distanceToHeld);
         // Debug.Log("scalefac: " + scaleFactor);
 
-        // GameObject transRef = holdParent.transform.GetChild(0).GetChild(0).gameObject;
-        GameObject transRef = holdParent.transform.GetChild(0).gameObject;
+        // GameObject transRef = holdParent.transform.GetChild(0).gameObject;
 
         float newScale = distanceToHeld * scaleFactor;
         heldObj.transform.localScale = new Vector3(newScale, newScale, newScale);
         // Debug.Log(transRef);
-        // transRef.transform.localScale += new Vector3(dir,dir,dir) * 0.2f;
-
-        // test
-        // distanceToHeld = Vector3.Distance(transform.position, heldObj.transform.position)-2.0f;
-        // float newScale = .5f * scaleFactor * distanceToHeld * dir;
-        // transRef.transform.localScale = new Vector3(newScale,newScale,newScale);
     }
 
     // Adjust physics properties, and attach object to holdParent
@@ -106,13 +100,10 @@ public class PickUp : MonoBehaviour
 
             // Move target position (holdParent) to curr. distance along view vector
             float distanceToObj = Vector3.Distance(transform.position, objRig.transform.position)-2.0f;
-            // scaleFactor = objRig.transform.localScale.x / distanceToHeld;
-            // scaleFactor = pickObj.transform.localScale.x / distanceToHeld;
-
             // Debug.Log("Distance:    " + distanceToHeld);
             // Debug.Log("Local Scale: " + pickObj.transform.localScale);
-
             // Debug.Log(scaleFactor);
+
             holdParent.transform.position += transform.TransformDirection(Vector3.forward) * distanceToObj;
 
             distanceToHeld = Vector3.Distance(holdParent.transform.position, transform.position);
