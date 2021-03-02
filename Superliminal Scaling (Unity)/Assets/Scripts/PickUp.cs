@@ -11,11 +11,20 @@ public class PickUp : MonoBehaviour
 
     private float distanceToHeld; // default value
     private float scaleFactor;   // default value.
-    // private float distanceToHeld = -1; // default value
-    // private float scaleFactor = -1f;   // default value.
 
     public Transform holdParent;
     private GameObject heldObj;
+
+    public bool collidersVisible = true;
+    public Material colliderMaterial;
+
+    public Transform forwCheck;
+    private GameObject forwCollider;
+
+    // public Transform backCheck;
+    // private GameObject backCollider;
+
+    public float checkDistance = .5f; // unused
 
     // Update is called once per frame
     void Update()
@@ -48,7 +57,7 @@ public class PickUp : MonoBehaviour
             // Debug.Log(distanceToHeld);
 
             // Move holdParent along vector input
-            if (Input.mouseScrollDelta.y != 0 && distanceToHeld > 2)
+            if (Input.mouseScrollDelta.y != 0/* && distanceToHeld > 2*/)
             {
                 MoveHoldParent(Input.mouseScrollDelta.y);
             }
@@ -86,6 +95,10 @@ public class PickUp : MonoBehaviour
         float newScale = distanceToHeld * scaleFactor;
         heldObj.transform.localScale = new Vector3(newScale, newScale, newScale);
         // Debug.Log(transRef);
+
+        float distanceToForw = Vector3.Distance(transform.position, forwCheck.transform.position);
+        newScale = distanceToForw * scaleFactor;
+        forwCollider.transform.localScale = new Vector3(newScale, newScale, newScale);
     }
 
     // Adjust physics properties, and attach object to holdParent
@@ -99,19 +112,43 @@ public class PickUp : MonoBehaviour
             objRig.freezeRotation = true;
             // objRig.isKinematic = true;
 
-            // Move target position (holdParent) to curr. distance along view vector
+            // Get distance from Player to Object
             float distanceToObj = Vector3.Distance(transform.position, objRig.transform.position)-2.0f;
             // Debug.Log("Distance:    " + distanceToHeld);
             // Debug.Log("Local Scale: " + pickObj.transform.localScale);
             // Debug.Log(scaleFactor);
 
+            // Move target position (holdParent) to curr. distance along view vector
             holdParent.transform.position += transform.TransformDirection(Vector3.forward) * distanceToObj;
 
+            // Update distance and scaleFactor
             distanceToHeld = Vector3.Distance(holdParent.transform.position, transform.position);
             scaleFactor = pickObj.transform.localScale.x / distanceToHeld;
 
+            // Set object to current held object
             objRig.transform.parent = holdParent;
             heldObj = pickObj;
+
+            // -----------------------------------
+            // TESTING COLLISION CONSTRAINTS BELOW
+            // could be nice if i just never move them 
+
+            // instantiate forward-check collider
+            // "public static Object Instantiate(Object original, Transform parent)"
+            GameObject forwObj = Instantiate(heldObj, forwCheck);
+            forwObj.GetComponent<MeshRenderer>().enabled = collidersVisible;
+            forwObj.GetComponent<MeshRenderer>().material = colliderMaterial;
+
+            Rigidbody forwRig = forwObj.GetComponent<Rigidbody>();
+            forwObj.GetComponent<MeshCollider>().isTrigger = true; // ignore physics
+
+            forwObj.transform.position = forwCheck.transform.position; // position
+
+            // scale
+            float forwScale = Vector3.Distance(transform.position, forwCheck.transform.position) * scaleFactor;
+            forwObj.transform.localScale = new Vector3(forwScale,forwScale,forwScale);
+
+            forwCollider = forwObj;
         }
     }
 
@@ -127,5 +164,7 @@ public class PickUp : MonoBehaviour
         heldObj.transform.parent = null;
         heldObj = null;
         holdParent.transform.position = transform.position + transform.TransformDirection(Vector3.forward)*2f;
+
+        DestroyImmediate(forwCollider);
     }
 }
