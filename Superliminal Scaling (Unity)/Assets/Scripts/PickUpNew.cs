@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PickUp : MonoBehaviour
+public class PickUpNew : MonoBehaviour
 {
     // public float pickupRange = 100f; // TODO: play with this, maybe obsolete
     // test
@@ -17,6 +17,8 @@ public class PickUp : MonoBehaviour
 
     public bool collidersVisible = true;
     public Material colliderMaterial;
+
+    private GameObject colliderObj;
 
     public Transform forwCheck;
     private GameObject forwCollider;
@@ -77,6 +79,9 @@ public class PickUp : MonoBehaviour
         distanceToHeld = Vector3.Distance(holdParent.transform.position, transform.position);
         float newScale = distanceToHeld * scaleFactor;
         heldObj.transform.localScale = new Vector3(newScale, newScale, newScale);
+
+        // float cS = 1.2f;
+        colliderObj.transform.localScale = new Vector3(newScale*1.2f, newScale*1.2f, newScale*1.2f);
     }
 
     // Moves object to target position until within satisfactory threshold
@@ -86,6 +91,11 @@ public class PickUp : MonoBehaviour
         {
             Vector3 moveDirection = (holdParent.position - heldObj.transform.position);
             heldObj.GetComponent<Rigidbody>().AddForce(moveDirection * moveForce);
+        }
+        if (Vector3.Distance(colliderObj.transform.position, holdParent.position) > clampFactor)
+        {
+            Vector3 moveDirection = (holdParent.position - colliderObj.transform.position);
+            colliderObj.GetComponent<Rigidbody>().AddForce(moveDirection * moveForce);
         }
     }
 
@@ -101,14 +111,17 @@ public class PickUp : MonoBehaviour
 
         // GameObject transRef = holdParent.transform.GetChild(0).gameObject;
 
-        // float newScale = distanceToHeld * scaleFactor;
-        // heldObj.transform.localScale = new Vector3(newScale, newScale, newScale);
+        float newScale = distanceToHeld * scaleFactor;
+        heldObj.transform.localScale = new Vector3(newScale, newScale, newScale);
         // Debug.Log(transRef);
 
+        // FORWARD COLLIDER
         // move forward-check collider
-        float distanceToForw = Vector3.Distance(transform.position, forwCheck.transform.position);
-        float newScale = distanceToForw * scaleFactor;
-        forwCollider.transform.localScale = new Vector3(newScale, newScale, newScale);
+        // float distanceToForw = Vector3.Distance(transform.position, forwCheck.transform.position);
+        // float newScale = distanceToForw * scaleFactor;
+        // forwCollider.transform.localScale = new Vector3(newScale, newScale, newScale);
+        float cS = 1.1f;
+        colliderObj.transform.localScale = new Vector3(newScale * cS, newScale * cS, newScale * cS);
     }
 
     // Adjust physics properties, and attach object to holdParent
@@ -120,7 +133,7 @@ public class PickUp : MonoBehaviour
             objRig.useGravity = false;
             objRig.drag = 10;   // optional
             objRig.freezeRotation = true;
-            // objRig.isKinematic = true;
+            objRig.isKinematic = true;
 
             // Get distance from Player to Object
             float distanceToObj = Vector3.Distance(transform.position, objRig.transform.position)-2.0f;
@@ -139,26 +152,40 @@ public class PickUp : MonoBehaviour
             objRig.transform.parent = holdParent;
             heldObj = pickObj;
 
+            // COLLISION
+            // GameObject collObj = Instantiate(heldObj, heldObj.transform);
+            GameObject collObj = Instantiate(heldObj, holdParent);
+            collObj.GetComponent<MeshRenderer>().enabled = collidersVisible;
+            collObj.GetComponent<MeshRenderer>().material = colliderMaterial;
+            // collObj.AddComponent<Script>() as CollisionChecker;
+
+            Rigidbody collRig = collObj.GetComponent<Rigidbody>();
+            collRig.GetComponent<MeshCollider>().isTrigger = true; // ignore physics
+
+            collObj.transform.localScale = new Vector3(2,2,2);
+            colliderObj = collObj;
+
             // -----------------------------------
             // TESTING COLLISION CONSTRAINTS BELOW
             // could be nice if i just never move them 
 
             // instantiate forward-check collider
             // "public static Object Instantiate(Object original, Transform parent)"
-            GameObject forwObj = Instantiate(heldObj, forwCheck);
-            forwObj.GetComponent<MeshRenderer>().enabled = false;
-            forwObj.GetComponent<MeshRenderer>().material = colliderMaterial;
+            // GameObject forwObj = Instantiate(heldObj, forwCheck);
+            // forwObj.GetComponent<MeshRenderer>().enabled = collidersVisible;
+            // forwObj.GetComponent<MeshRenderer>().material = colliderMaterial;
 
-            Rigidbody forwRig = forwObj.GetComponent<Rigidbody>();
-            forwObj.GetComponent<MeshCollider>().isTrigger = true; // ignore physics
+            // Rigidbody forwRig = forwObj.GetComponent<Rigidbody>();
+            // forwObj.GetComponent<MeshCollider>().isTrigger = true; // ignore physics
 
-            forwObj.transform.position = forwCheck.transform.position; // position
+            // forwObj.transform.position = forwCheck.transform.position; // position
 
-            // scale
-            float forwScale = Vector3.Distance(transform.position, forwCheck.transform.position) * scaleFactor;
-            forwObj.transform.localScale = new Vector3(forwScale,forwScale,forwScale);
+            // // scale
+            // float forwScale = Vector3.Distance(transform.position, forwCheck.transform.position) * scaleFactor;
+            // forwObj.transform.localScale = new Vector3(forwScale,forwScale,forwScale);
 
-            forwCollider = forwObj;
+            // forwCollider = forwObj;
+            // -----------------------------------
         }
     }
 
@@ -169,12 +196,12 @@ public class PickUp : MonoBehaviour
         heldRig.useGravity = true;
         heldRig.drag = 1;
         heldRig.freezeRotation = false;
-        // heldRig.isKinematic = false;
+        heldRig.isKinematic = false;
         
         heldObj.transform.parent = null;
         heldObj = null;
         holdParent.transform.position = transform.position + transform.TransformDirection(Vector3.forward)*2f;
 
-        DestroyImmediate(forwCollider);
+        DestroyImmediate(colliderObj);
     }
 }
