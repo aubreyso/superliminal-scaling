@@ -18,6 +18,7 @@ public class PickUp_binary : MonoBehaviour
     private GameObject heldObj;
 
     // Vars for collision checker
+    public bool updateObjectPos = true;
     private float maxRayDist = 100f;
     public bool collidersVisible = false;
     public Material colliderMaterial;
@@ -64,9 +65,11 @@ public class PickUp_binary : MonoBehaviour
             RaycastToCollision();
 
             // move/scale actual object
-            holdParent.transform.position = collObj.transform.position;
-            ScaleObject(heldObj);
-
+            if (updateObjectPos)
+            {
+                holdParent.transform.position = collObj.transform.position;
+                ScaleObject(heldObj);
+            }
         }
     }
 
@@ -121,7 +124,7 @@ public class PickUp_binary : MonoBehaviour
 
             // collObj.transform.localScale *= 1.2f; // temp test rescale
             collObj.transform.position = holdParent.transform.position; // position
-            collObj.AddComponent<CollisionChecker>(); // add Collider         
+            collObj.AddComponent<CollisionChecker>(); // add Collider
         }
     }
 

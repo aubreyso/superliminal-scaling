@@ -2169,6 +2169,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3594813079038363733, guid: 8815c2bc3c9dd124bad8baf6626d7115,
         type: 3}
+      propertyPath: updateObjectPos
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3594813079038363733, guid: 8815c2bc3c9dd124bad8baf6626d7115,
+        type: 3}
       propertyPath: colliderMaterial
       value: 
       objectReference: {fileID: 0}
