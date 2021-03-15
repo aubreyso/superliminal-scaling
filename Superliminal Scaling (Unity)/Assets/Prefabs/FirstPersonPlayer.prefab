@@ -63,7 +63,7 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.3
-  far clip plane: 1000
+  far clip plane: 2000
   field of view: 70
   orthographic: 0
   orthographic size: 5
@@ -150,6 +150,8 @@ MonoBehaviour:
   clampFactor: 0.01
   moveForce: 150
   holdParent: {fileID: 3594813080707521893}
+  updateObjectPos: 1
+  collidersVisible: 0
   colliderMaterial: {fileID: 2100000, guid: cb7e24611f7c41b42910bc252bae8569, type: 2}
 --- !u!1 &3594813079216371619
 GameObject:
