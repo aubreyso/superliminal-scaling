@@ -68,14 +68,8 @@ public class PickUp_binary : MonoBehaviour
                 // collObj.IsColliding();
             }
 
-
-            // Raycast dist check
-            if (Input.GetKeyDown(KeyCode.Q))
-            {
-                // collObj.transform.position = holdParent.transform.position;
-                // if (!collObj.GetComponent<CollisionChecker>().IsColliding())
-                PrintDistanceToCollision();
-            }
+            collObj.transform.position = holdParent.transform.position;
+            RaycastToCollision();
         }
     }
 
@@ -199,22 +193,25 @@ public class PickUp_binary : MonoBehaviour
         // wait for collision triggers to update
         yield return new WaitForFixedUpdate();
 
-        // if this doesn't collides, recurse downward
-        if (!collObj.GetComponent<CollisionChecker>().IsColliding())
+        if (collObj != null)
         {
-            StartCoroutine(CollisionChecker(midPos, endPos));
-        }
-        // else, reset to this recursive call's startPos
-        else
-        {
-            collObj.transform.position = startPos;
-            float startScale = Vector3.Distance(transform.position, startPos) * scaleFactor;
-            collObj.transform.localScale = new Vector3(startScale, startScale, startScale);
+            // if this doesn't collides, recurse downward
+            if (!collObj.GetComponent<CollisionChecker>().IsColliding())
+            {
+                StartCoroutine(CollisionChecker(midPos, endPos));
+            }
+            // else, reset to this recursive call's startPos
+            else
+            {
+                collObj.transform.position = startPos;
+                float startScale = Vector3.Distance(transform.position, startPos) * scaleFactor;
+                collObj.transform.localScale = new Vector3(startScale, startScale, startScale);
+            }
         }
     }
 
-    // temp raycast check
-    void PrintDistanceToCollision()
+    // raycast check
+    void RaycastToCollision()
     {
         RaycastHit hit;
         if (Physics.Raycast(transform.position,                             // ro
