@@ -18,8 +18,8 @@ public class PickUp_binary : MonoBehaviour
     private GameObject heldObj;
 
     // Vars for collision checker
-    // public Transform 
-    private float distanceToWall;
+    private float maxRayDist = 100f;
+    public bool collidersVisible = false;
     public Material colliderMaterial;
     private GameObject collObj;
 
@@ -58,18 +58,15 @@ public class PickUp_binary : MonoBehaviour
             {
                 MoveHoldParent(Input.mouseScrollDelta.y);
             }
-            ScaleObject();
-
-
-            // call collidercheck function
-            if (Input.GetKeyDown(KeyCode.F))
-            {
-                collObj.GetComponent<CollisionChecker>().IsColliding();
-                // collObj.IsColliding();
-            }
-
-            collObj.transform.position = holdParent.transform.position;
+            
+            // prediction checking
+            collObj.transform.position = transform.position;
             RaycastToCollision();
+
+            // move/scale actual object
+            holdParent.transform.position = collObj.transform.position;
+            ScaleObject(heldObj);
+
         }
     }
 
@@ -111,10 +108,11 @@ public class PickUp_binary : MonoBehaviour
 
             // instantiate collider object
             collObj = Instantiate(heldObj, holdParent);
-            collObj.GetComponent<MeshCollider>().enabled = true;
+            collObj.GetComponent<MeshCollider>().enabled = false;
             // GameObject collObj = Instantiate(heldObj, holdParent); // instantiate new
-            collObj.GetComponent<MeshRenderer>().enabled = true;
+            // collObj.GetComponent<MeshRenderer>().enabled = collidersVisible;
             collObj.GetComponent<MeshRenderer>().material = colliderMaterial;
+            collObj.GetComponent<MeshRenderer>().enabled = collidersVisible;
             // collObj.tag = "Ignore Raycast";
             collObj.layer = LayerMask.NameToLayer("Ignore Raycast");
 
@@ -166,11 +164,11 @@ public class PickUp_binary : MonoBehaviour
     }
 
     // scales object according to distance from player
-    void ScaleObject()
+    void ScaleObject(GameObject obj)
     {
-        distanceToHeld = Vector3.Distance(holdParent.transform.position, transform.position);
+        distanceToHeld = Vector3.Distance(obj.transform.position, transform.position);
         float newScale = distanceToHeld * scaleFactor;
-        heldObj.transform.localScale = new Vector3(newScale, newScale, newScale);
+        obj.transform.localScale = new Vector3(newScale, newScale, newScale);
     }
 
     // Recursively navigates space to find where to project object into scene
@@ -180,7 +178,6 @@ public class PickUp_binary : MonoBehaviour
         // Get midpoint between startPos and endPos
         float totalDist = Vector3.Distance(startPos, endPos);
         Vector3 midPos = startPos + (endPos - startPos)/2;
-        float midScale = Vector3.Distance(transform.position, midPos) * scaleFactor;
 
         // Debug.Log("s " + startPos);
         // Debug.Log("m " + midPos);
@@ -188,7 +185,7 @@ public class PickUp_binary : MonoBehaviour
 
         // Move collObj to midpoint + scale to scaleFactor
         collObj.transform.position = midPos;
-        collObj.transform.localScale = new Vector3(midScale, midScale, midScale);
+        ScaleObject(collObj);
 
         // wait for collision triggers to update
         yield return new WaitForFixedUpdate();
@@ -216,7 +213,8 @@ public class PickUp_binary : MonoBehaviour
         RaycastHit hit;
         if (Physics.Raycast(transform.position,                             // ro
                             transform.TransformDirection(Vector3.forward),  // rd
-                            out hit))                                       // raycast out
+                            out hit,                                        // raycast out
+                            maxRayDist))                                    // max dist
         {
             // Debug.Log(hit.transform.gameObject + " " + Vector3.Distance(hit.transform.position, holdParent.transform.position));
             StartCoroutine(CollisionChecker(collObj.transform.position, hit.point));
@@ -255,3 +253,9 @@ public class PickUp_binary : MonoBehaviour
     // ...?
 
 // fixed distance from player (never closer than X distance)
+
+
+// collision checking with all walls (some issues when swapping what raycast hits)
+
+// increase distance of raycast
+// backwards raycast logic (why doesn't get as flush too wall as possible)
