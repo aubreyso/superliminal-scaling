@@ -72,6 +72,8 @@ public class PickUp_binary : MonoBehaviour
             // Raycast dist check
             if (Input.GetKeyDown(KeyCode.Q))
             {
+                // collObj.transform.position = holdParent.transform.position;
+                // if (!collObj.GetComponent<CollisionChecker>().IsColliding())
                 PrintDistanceToCollision();
             }
         }
@@ -108,12 +110,14 @@ public class PickUp_binary : MonoBehaviour
             heldObj = pickObj;
             // heldObj.tag = "Ignore Raycast";
             heldObj.layer = LayerMask.NameToLayer("Ignore Raycast");
+            heldObj.GetComponent<MeshCollider>().enabled = false;
 
             // COLLIDER STUFF
             // --------------
 
             // instantiate collider object
             collObj = Instantiate(heldObj, holdParent);
+            collObj.GetComponent<MeshCollider>().enabled = true;
             // GameObject collObj = Instantiate(heldObj, holdParent); // instantiate new
             collObj.GetComponent<MeshRenderer>().enabled = true;
             collObj.GetComponent<MeshRenderer>().material = colliderMaterial;
@@ -123,7 +127,7 @@ public class PickUp_binary : MonoBehaviour
             // Rigidbody collRig = collObj.GetComponent<Rigidbody>(); // use this?
             collObj.GetComponent<MeshCollider>().isTrigger = true; // ignore physics
 
-            collObj.transform.localScale *= 1.2f; // temp test rescale
+            // collObj.transform.localScale *= 1.2f; // temp test rescale
             collObj.transform.position = holdParent.transform.position; // position
             collObj.AddComponent<CollisionChecker>(); // add Collider         
         }
@@ -139,6 +143,7 @@ public class PickUp_binary : MonoBehaviour
         heldRig.freezeRotation = false;
         // heldObj.tag = "Untagged";
         heldObj.layer = LayerMask.NameToLayer("Default");
+        heldObj.GetComponent<MeshCollider>().enabled = true;
         // heldRig.isKinematic = false;
         
         heldObj.transform.parent = null;
@@ -174,6 +179,40 @@ public class PickUp_binary : MonoBehaviour
         heldObj.transform.localScale = new Vector3(newScale, newScale, newScale);
     }
 
+    // Recursively navigates space to find where to project object into scene
+    // return type Vector3? Transform?
+    IEnumerator CollisionChecker(Vector3 startPos, Vector3 endPos)
+    {
+        // Get midpoint between startPos and endPos
+        float totalDist = Vector3.Distance(startPos, endPos);
+        Vector3 midPos = startPos + (endPos - startPos)/2;
+        float midScale = Vector3.Distance(transform.position, midPos) * scaleFactor;
+
+        // Debug.Log("s " + startPos);
+        // Debug.Log("m " + midPos);
+        // Debug.Log("e " + endPos);
+
+        // Move collObj to midpoint + scale to scaleFactor
+        collObj.transform.position = midPos;
+        collObj.transform.localScale = new Vector3(midScale, midScale, midScale);
+
+        // wait for collision triggers to update
+        yield return new WaitForFixedUpdate();
+
+        // if this doesn't collides, recurse downward
+        if (!collObj.GetComponent<CollisionChecker>().IsColliding())
+        {
+            StartCoroutine(CollisionChecker(midPos, endPos));
+        }
+        // else, reset to this recursive call's startPos
+        else
+        {
+            collObj.transform.position = startPos;
+            float startScale = Vector3.Distance(transform.position, startPos) * scaleFactor;
+            collObj.transform.localScale = new Vector3(startScale, startScale, startScale);
+        }
+    }
+
     // temp raycast check
     void PrintDistanceToCollision()
     {
@@ -182,7 +221,8 @@ public class PickUp_binary : MonoBehaviour
                             transform.TransformDirection(Vector3.forward),  // rd
                             out hit))                                       // raycast out
         {
-            Debug.Log(hit.transform.gameObject + " " + Vector3.Distance(hit.transform.position, holdParent.transform.position));
+            // Debug.Log(hit.transform.gameObject + " " + Vector3.Distance(hit.transform.position, holdParent.transform.position));
+            StartCoroutine(CollisionChecker(collObj.transform.position, hit.point));
         }
     }
 } 

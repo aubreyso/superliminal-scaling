@@ -8,17 +8,20 @@ public class CollisionChecker : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
+        Debug.Log("Collision enter!");
         isColliding = true;
     }    
 
     void OnTriggerExit(Collider other)
     {
+        Debug.Log("Collision exit!");
         isColliding = false;
     }
 
-    public void IsColliding()
+    public bool IsColliding()
     {
-        Debug.Log(isColliding);
+        // Debug.Log(isColliding);
+        return isColliding;
     }
 }
 
