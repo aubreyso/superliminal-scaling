@@ -9,7 +9,7 @@ public class PlayerMovement : MonoBehaviour
     // general movement constants
     public float speed = 12f;         // move speed
     public float gravity = -9.81f;   // gravity 
-    public float jumpHeight = 3;
+    public float jumpHeight = 3f;
 
     // ground check logic variables
     public Transform groundCheck;           // ref to Ground Check obj    
@@ -34,12 +34,23 @@ public class PlayerMovement : MonoBehaviour
         float xin = Input.GetAxis("Horizontal");
         float zin = Input.GetAxis("Vertical");
 
+        float yin = Input.GetAxis("Jump");
+
         // Vector (arrow) pointing in move dir.
         Vector3 moveVec = (transform.right * xin) + (transform.forward * zin);
+        Vector3 moveVecJump = (transform.up * yin);
         controller.Move(moveVec * speed * Time.deltaTime);
 
         // Apply jump
-        // ...
+        // Finished 3/15/21 Rui
+        //if(Input.GetKeyDown("space"))
+        //    controller.Move(transform.up * speed * Time.deltaTime);
+
+        if (Input.GetButtonDown("Jump") && isGrounded)
+        {
+            velocity.y += Mathf.Sqrt(jumpHeight * -2.0f * gravity);
+        }
+
 
         // Apply gravity
         velocity.y += gravity * Time.deltaTime;
