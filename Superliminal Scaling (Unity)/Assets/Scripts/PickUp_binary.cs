@@ -18,7 +18,6 @@ public class PickUp_binary : MonoBehaviour
     private GameObject heldObj;
 
     // Vars for collision checker
-    public bool realtimeCollision = true;
     public bool updateObjectPos = true;
     private float maxRayDist = 100f;
     public bool collidersVisible = false;
@@ -56,14 +55,14 @@ public class PickUp_binary : MonoBehaviour
             MoveObject();
 
             // Move holdParent along vector input
-            if (Input.mouseScrollDelta.y != 0)
+            if (Input.mouseScrollDelta.y != 0/* && distanceToHeld > 2*/)
+            {
                 MoveHoldParent(Input.mouseScrollDelta.y);
+            }
             
             // prediction checking
-            // collObj.transform.position = transform.position;
-            if (Input.GetKeyDown(KeyCode.Q) || realtimeCollision)
-                // StartCoroutine(RaycastToCollision());
-                RaycastToCollision()
+            collObj.transform.position = transform.position;
+            RaycastToCollision();
 
             // move/scale actual object
             if (updateObjectPos)
@@ -87,6 +86,7 @@ public class PickUp_binary : MonoBehaviour
             objRig.useGravity = false;
             objRig.freezeRotation = true;
             objRig.drag = 10;   // optional
+            // pickObj.tag = "IgnoreRaycast";
             // objRig.isKinematic = true; // not sure if needed
 
             // Get distance from Player to Object
@@ -102,6 +102,7 @@ public class PickUp_binary : MonoBehaviour
             // Set object to current held object
             objRig.transform.parent = holdParent;
             heldObj = pickObj;
+            // heldObj.tag = "Ignore Raycast";
             heldObj.layer = LayerMask.NameToLayer("Ignore Raycast");
             heldObj.GetComponent<MeshCollider>().enabled = false;
 
@@ -111,23 +112,31 @@ public class PickUp_binary : MonoBehaviour
             // instantiate collider object
             collObj = Instantiate(heldObj, holdParent);
             collObj.GetComponent<MeshCollider>().enabled = false;
-            collObj.GetComponent<MeshCollider>().isTrigger = true; // ignore physics
+            // GameObject collObj = Instantiate(heldObj, holdParent); // instantiate new
+            // collObj.GetComponent<MeshRenderer>().enabled = collidersVisible;
             collObj.GetComponent<MeshRenderer>().material = colliderMaterial;
             collObj.GetComponent<MeshRenderer>().enabled = collidersVisible;
+            // collObj.tag = "Ignore Raycast";
             collObj.layer = LayerMask.NameToLayer("Ignore Raycast");
 
-            collObj.transform.position = holdParent.transform.position; // initial position
-            collObj.AddComponent<CollisionChecker>();                   // add Collider
+            // Rigidbody collRig = collObj.GetComponent<Rigidbody>(); // use this?
+            collObj.GetComponent<MeshCollider>().isTrigger = true; // ignore physics
+
+            // collObj.transform.localScale *= 1.2f; // temp test rescale
+            collObj.transform.position = holdParent.transform.position; // position
+            collObj.AddComponent<CollisionChecker>(); // add Collider
         }
     }
 
     // Reset physics properties, and detach object from holdParent
     void DropObject()
     {
+        // heldObj.tag = "Untagged";
         Rigidbody heldRig = heldObj.GetComponent<Rigidbody>();
         heldRig.useGravity = true;
         heldRig.drag = 1;
         heldRig.freezeRotation = false;
+        // heldObj.tag = "Untagged";
         heldObj.layer = LayerMask.NameToLayer("Default");
         heldObj.GetComponent<MeshCollider>().enabled = true;
         // heldRig.isKinematic = false;
@@ -173,13 +182,16 @@ public class PickUp_binary : MonoBehaviour
         float totalDist = Vector3.Distance(startPos, endPos);
         Vector3 midPos = startPos + (endPos - startPos)/2;
 
+        // Debug.Log("s " + startPos);
+        // Debug.Log("m " + midPos);
+        // Debug.Log("e " + endPos);
+
         // Move collObj to midpoint + scale to scaleFactor
         collObj.transform.position = midPos;
         ScaleObject(collObj);
 
         // wait for collision triggers to update
         yield return new WaitForFixedUpdate();
-        yield return new WaitForSeconds(1);
 
         if (collObj != null)
         {
@@ -192,7 +204,8 @@ public class PickUp_binary : MonoBehaviour
             else
             {
                 collObj.transform.position = startPos;
-                ScaleObject(collObj);
+                float startScale = Vector3.Distance(transform.position, startPos) * scaleFactor;
+                collObj.transform.localScale = new Vector3(startScale, startScale, startScale);
             }
         }
     }
@@ -200,9 +213,6 @@ public class PickUp_binary : MonoBehaviour
     // raycast check
     void RaycastToCollision()
     {
-        yield return new WaitForFixedUpdate();
-        collObj.transform.position = transform.position;
-
         RaycastHit hit;
         if (Physics.Raycast(transform.position,                             // ro
                             transform.TransformDirection(Vector3.forward),  // rd
