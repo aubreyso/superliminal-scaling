@@ -8,8 +8,8 @@ public class PlayerMovement : MonoBehaviour
 
     // general movement constants
     public float speed = 12f;         // move speed
-    public float gravity = -9.81f;   // gravity 
-    public float jumpHeight = 3f;
+    public float gravity = -19.81f;   // gravity 
+    public float jumpHeight = 5f;
 
     // ground check logic variables
     public Transform groundCheck;           // ref to Ground Check obj    
@@ -49,6 +49,7 @@ public class PlayerMovement : MonoBehaviour
         if (Input.GetButtonDown("Jump") && isGrounded)
         {
             velocity.y += Mathf.Sqrt(jumpHeight * -2.0f * gravity);
+            isGrounded = false;
         }
 
 
