@@ -2089,8 +2089,13 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3594813079038363733, guid: 8815c2bc3c9dd124bad8baf6626d7115,
         type: 3}
+      propertyPath: realtimeUpdate
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3594813079038363733, guid: 8815c2bc3c9dd124bad8baf6626d7115,
+        type: 3}
       propertyPath: updateObjectPos
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3594813079038363733, guid: 8815c2bc3c9dd124bad8baf6626d7115,
         type: 3}
@@ -2100,7 +2105,7 @@ PrefabInstance:
     - target: {fileID: 3594813079038363733, guid: 8815c2bc3c9dd124bad8baf6626d7115,
         type: 3}
       propertyPath: collidersVisible
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3594813080707521893, guid: 8815c2bc3c9dd124bad8baf6626d7115,
         type: 3}

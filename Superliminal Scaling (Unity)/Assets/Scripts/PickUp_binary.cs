@@ -18,6 +18,7 @@ public class PickUp_binary : MonoBehaviour
     private GameObject heldObj;
 
     // Vars for collision checker
+    public bool realtimeUpdate = true;
     public bool updateObjectPos = true;
     private float maxRayDist = 100f;
     public bool collidersVisible = false;
@@ -61,8 +62,12 @@ public class PickUp_binary : MonoBehaviour
             }
             
             // prediction checking
-            collObj.transform.position = transform.position;
-            RaycastToCollision();
+            if (realtimeUpdate || Input.GetKeyDown(KeyCode.Q))
+            {
+                collObj.transform.position = transform.position;
+                RaycastToCollision();
+            }
+            
 
             // move/scale actual object
             if (updateObjectPos)
@@ -109,6 +114,7 @@ public class PickUp_binary : MonoBehaviour
 
             // instantiate collider object
             collObj = Instantiate(heldObj, holdParent);
+            // collObj = Instantiate(heldObj, transform);
             collObj.GetComponent<MeshCollider>().enabled = false;
             collObj.GetComponent<MeshRenderer>().material = colliderMaterial;
             collObj.GetComponent<MeshRenderer>().enabled = collidersVisible;
